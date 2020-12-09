@@ -1,7 +1,13 @@
 <template>
   <div id="app">
   <input v-model="roomId" placeholder="Room ID"/>
-  <vue-webrtc width="100%" :roomId="roomId" ref="rtc"></vue-webrtc>
+  <vue-webrtc width="100%" :roomId="roomId" stunServer="stun.l.google.com:19302" ref="webrtc"
+  v-on:joined-room="logEvent"
+                      v-on:left-room="logEvent"
+                      v-on:opened-room="logEvent"
+                      v-on:share-started="logEvent"
+                      v-on:share-stopped="logEvent"
+                      @error="onError"></vue-webrtc>
   <button v-on:click="joinRoom()">Join Room 🤝</button>
   <button v-on:click="leaveRoom()">Leave Room ❌</button>
   <button v-on:click="screenShare()">Share Screen 🖥️</button>
@@ -20,18 +26,29 @@ export default {
   methods: {
     screenShare: function() {
       console.log("Screen Share")
-      this.$refs.rtc.shareScreen()
+      this.$refs.webrtc.shareScreen()
     },
     takePhoto: function() {
       console.log("Take Photo")
-      this.$refs.rtc.capture()
+      this.$refs.webrtc.capture()
     },
     joinRoom: function(){
-      this.$refs.rtc.join()
+      console.log('Join Room')
+      this.$refs.webrtc.join()
+
     },
     leaveRoom: function() {
-      this.$refs.rtc.leave()
-    }
+      this.$refs.webrtc.leave()
+    },
+    onError(error, stream) {
+        console.log('On Error Event', error, stream);
+      },
+    logEvent(event) {
+      console.log('Event : ', event);
+    },
+  },
+  mounted(){
+    this.joinRoom()
   }
 }
 </script>
