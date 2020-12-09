@@ -1,13 +1,8 @@
 <template>
   <div id="app">
   <input v-model="roomId" placeholder="Room ID"/>
-  <vue-webrtc width="100%" :roomId="roomId" stunServer="stun.l.google.com:19302" ref="webrtc"
-  v-on:joined-room="logEvent"
-                      v-on:left-room="logEvent"
-                      v-on:opened-room="logEvent"
-                      v-on:share-started="logEvent"
-                      v-on:share-stopped="logEvent"
-                      @error="onError"></vue-webrtc>
+  <video id="localVideo" autoplay playsinline></video>
+  <video id="remoteVideo" autoplay playsinline></video>
   <button v-on:click="joinRoom()">Join Room 🤝</button>
   <button v-on:click="leaveRoom()">Leave Room ❌</button>
   <button v-on:click="screenShare()">Share Screen 🖥️</button>
@@ -20,10 +15,22 @@ export default {
   name: 'App',
   data() {
     return {
-      roomId: 'test'
+      roomId: 'test',
+      localStream: null,
+      localPeerConnection: null
     }
   },
   methods: {
+    createdOffer: function(description) {
+      console.log(description)
+      this.localPeerConnection.setLocalDescription(description)
+    .then(() => {
+      console.log(this.localPeerConnection.localDescription);
+    }).catch(this.setSessionDescriptionError);
+    },
+    setSessionDescriptionError: function(err){
+      console.log(err)
+    },
     screenShare: function() {
       console.log("Screen Share")
       this.$refs.webrtc.shareScreen()
@@ -34,7 +41,21 @@ export default {
     },
     joinRoom: function(){
       console.log('Join Room')
-      this.$refs.webrtc.join()
+      const localVideo = document.querySelector('#localVideo');
+      const mediaStreamConstraints = {
+        video: true,
+      };
+      navigator.mediaDevices.getUserMedia(mediaStreamConstraints)
+      .then(mediaStream => {
+        this.localStream = mediaStream;
+        localVideo.srcObject = mediaStream;
+      }).catch(error => {
+        console.log('navigator.getUserMedia error: ', error);
+      });
+      this.localPeerConnection = new RTCPeerConnection();
+      this.localPeerConnection.addStream(this.localStream);
+      this.localPeerConnection.createOffer()
+  .then(this.createdOffer).catch(this.setSessionDescriptionError);
 
     },
     leaveRoom: function() {
@@ -48,7 +69,6 @@ export default {
     },
   },
   mounted(){
-    this.joinRoom()
   }
 }
 </script>
