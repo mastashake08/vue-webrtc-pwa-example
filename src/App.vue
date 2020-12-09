@@ -1,17 +1,37 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <input v-model="roomId" placeholder="Room ID"/>
+  <vue-webrtc width="100%" :roomId="roomId" ref="rtc"></vue-webrtc>
+  <button v-on:click="joinRoom()">Join Room 🤝</button>
+  <button v-on:click="leaveRoom()">Leave Room ❌</button>
+  <button v-on:click="screenShare()">Share Screen 🖥️</button>
+  <button v-on:click="takePhoto()">Take Photo 📷</button>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
   name: 'App',
-  components: {
-    HelloWorld
+  data() {
+    return {
+      roomId: 'test'
+    }
+  },
+  methods: {
+    screenShare: function() {
+      console.log("Screen Share")
+      this.$refs.rtc.shareScreen()
+    },
+    takePhoto: function() {
+      console.log("Take Photo")
+      this.$refs.rtc.capture()
+    },
+    joinRoom: function(){
+      this.$refs.rtc.join()
+    },
+    leaveRoom: function() {
+      this.$refs.rtc.leave()
+    }
   }
 }
 </script>
